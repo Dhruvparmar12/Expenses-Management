@@ -41,18 +41,16 @@ user.post("/add", [
                 }
                 var check = `select u_email from user where u_email='${email}'`
                 con.query(check, (err, data) => {
-                    if (data) {
-                        res.status(406).send({ msg: 'Email Already Exists' })
+                    if (data.length!=0) {
+                        res.status(406).json({ msg: 'Email Already Exists' })
                     }
                     else {
 
                         var sql = `insert into user(u_name,u_email,u_password,u_mobile) values('${name}','${email}','${password}',${mobile})`;
                         con.query(sql, (err, result) => {
                             if (result) {
-                                let token = jwt.sign(userData, SECRET_KEY, {
-                                    expiresIn: 1440
-                                })
-                                res.status(201).json({ token: token, msg: 'Data Inserted' });
+                            
+                                res.status(201).json({ msg: 'Successfully Registered' });
                             }
                         });
                     }
@@ -61,7 +59,7 @@ user.post("/add", [
         }
     }
     catch (error) {
-        res.status(500).send({ msg: error })
+        res.status(500).json({ msg: error })
     }
 });
 
@@ -87,17 +85,17 @@ user.post('/login', [
                 var que = `select * from user where u_email='${email}'`;
                 con.query(que, (err, result) => {
                     if (result.length == 0) {
-                        res.status(406).send({ msg: '*Email Id Does Not Exists' });
+                        res.status(404).send({ msg: '*Email Id Does Not Exists' });
                     }
                     else {
                         if (bcrypt.compareSync(password, result[0].u_password)) {
                             let token = jwt.sign(data, SECRET_KEY, {
                                 expiresIn: 1440
                             })
-                            res.status(200).json({ token: token, u_id: result[0]['u_id'], msg: 'Login Successfully..!' })
+                            res.status(200).send({ token: token, u_id: result[0]['u_id'],msg:'LogIn SuccssFully' })
 
                         } else {
-                            res.status(406).send({ msg: '*Password Does Not Match' })
+                            res.status(404).send({ msg: '*Password Does Not Match' })
                         }
 
                     }
@@ -119,7 +117,7 @@ user.get('/profile', (req, res) => {
     try {
         var decoded = jwt.verify(req.headers['authorization'], SECRET_KEY)
         if (decoded) {
-            const que = `select * from user where u_email='${decoded.email}'`;
+            const que = `select * from user where u_id='${decoded.u_id}'`;
             con.query(que, (err, result) => {
 
                 if (!result.length == 0) {
