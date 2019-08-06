@@ -9,7 +9,8 @@ const { check, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 user.use(cors());
 const con = require('../connection/connection')
-const SECRET_KEY= process.env.SECRET;
+const auth = require('./auth');
+const SECRET_KEY = process.env.SECRET;
 
 //User Registration
 user.post("/add", [
@@ -59,7 +60,11 @@ user.post("/add", [
         }
     }
     catch (error) {
+<<<<<<< HEAD
         res.status(500).json({ msg: error })
+=======
+        res.status(500).send({ msg: error.message })
+>>>>>>> splitwise
     }
 });
 
@@ -92,7 +97,11 @@ user.post('/login', [
                             let token = jwt.sign(data, SECRET_KEY, {
                                 expiresIn: 1440
                             })
+<<<<<<< HEAD
                             res.status(200).send({ token: token, u_id: result[0]['u_id'],msg:'LogIn SuccssFully' })
+=======
+                            res.status(200).json({ token: token, u_id: result[0]['u_id'],u_name:result[0]['u_name'], msg: 'Login Successfully..!' })
+>>>>>>> splitwise
 
                         } else {
                             res.status(404).send({ msg: '*Password Does Not Match' })
@@ -107,51 +116,75 @@ user.post('/login', [
         }
     }
     catch (error) {
-        res.status(500).send({ msg: error })
+        res.status(500).send({ msg: error.message })
     }
 
 
-})
-//Get Profile
-user.get('/profile', (req, res) => {
+});
+
+// All users
+user.get('/alluser', auth, (req, res) => {
     try {
+
+        const que = `select * from user `;
+        con.query(que, (err, result) => {
+
+            if (!result.length == 0) {
+                res.status(200).json({ msg: result })
+            }
+            else {
+                res.status(404).send({ msg: err['sqlMessage'] });
+            }
+        })
+    }
+    catch (error) {
+        res.status(401).send({ msg: error.message })
+    }
+});
+
+//Get Profile
+user.get('/profile', auth, (req, res) => {
+    try {
+<<<<<<< HEAD
         var decoded = jwt.verify(req.headers['authorization'], SECRET_KEY)
         if (decoded) {
             const que = `select * from user where u_id='${decoded.u_id}'`;
             con.query(que, (err, result) => {
+=======
+>>>>>>> splitwise
 
-                if (!result.length == 0) {
-                    res.status(200).json({ msg: result })
-                }
-                else {
-                    res.status(404).send({ msg: 'User Does not Exists' });
-                }
-            })
-        }
+        const que = `select * from user where u_email='${req.user[0]['u_email']}'`;
+        con.query(que, (err, result) => {
+
+            if (!result.length == 0) {
+                res.status(200).json({ msg: result })
+            }
+            else {
+                res.status(404).send({ msg: err['sqlMessage'] });
+            }
+        })
     }
     catch (error) {
-        res.status(401).send({ msg: 'Unauthorized User' })
+        res.status(401).send({ msg: error.message })
     }
 });
 
 //Get Specific User Profile
-user.get('/user/:id', (req, res) => {
+user.get('/user/:id', auth, (req, res) => {
     try {
-        if (jwt.verify(req.headers['authorization'], SECRET_KEY)) {
-            const que = `select * from user where u_id='${req.params.id}'`;
-            con.query(que, (err, result) => {
+        const que = `select * from user where u_id='${req.params.id}'`;
+        con.query(que, (err, result) => {
 
-                if (!result.length == 0) {
-                    res.status(200).json({ msg: result })
-                }
-                else {
-                    res.status(404).send({ msg: 'User Does not Exists' })
-                }
-            })
-        }
+            if (!result.length == 0) {
+                res.status(200).json({ msg: result })
+            }
+            else {
+                res.status(404).send({ msg: err['sqlMessage'] })
+            }
+        })
 
     } catch (error) {
-        res.status(401).send({ msg: 'Unauthorized User' })
+        res.status(401).send({ msg: error.message })
     }
 });
 
@@ -162,7 +195,7 @@ user.patch('/update/:id', [
     check('u_email', 'Please Enter the Valid Email Address').not().isEmpty().withMessage('Cannot be Blank').isEmail().withMessage('Please Enter the Valid Email Address'),
     check('u_mobile').matches(/^[0][1-9]\d{9}$|^[1-9]\d{9,12}$/).withMessage('only number,Min 10, Max 13 length')
 
-], (req, res) => {
+],auth, (req, res) => {
 
 
     if (res) {
@@ -173,29 +206,27 @@ user.patch('/update/:id', [
         }
         else {
             try {
-                if (jwt.verify(req.headers['authorization'], SECRET_KEY)) {
-                    const check = `select u_email from user where u_email='${req.body.u_email}'`
-                    con.query(check, (err, data) => {
-
-                        if (data.length != 0) {
-                            res.status(406).send({ mgs: 'Email Already Used.!' })
-                        }
-                        else {
-                            const que = `update user set u_name='${req.body.u_name}',u_email='${req.body.u_email}',u_mobile=${req.body.u_mobile} where u_id='${req.params.id}'`;
-                            con.query(que, (err, result) => {
-                                if (result) {
-                                    res.status(201).json({ msg: 'Profile Updated..!' });
-                                }
-                                else {
-                                    res.status(400).send({ msg: 'User Does not Exists' });
-                                }
-                            })
-                        }
-                    })
-                }
+                
+                const check = `select u_email from user where u_email='${req.body.u_email}'`
+                con.query(check, (err, data) => {
+                    if (data[0]['u_email'] != req.user[0]['u_email'] ) {
+                        res.status(406).send({ msg: 'Email Already Used.!' })
+                    }
+                    else {
+                        const que = `update user set u_name='${req.body.u_name}',u_email='${req.body.u_email}',u_mobile=${req.body.u_mobile} where u_id='${req.params.id}'`;
+                        con.query(que, (err, result) => {
+                            if (result) {
+                                res.status(201).json({ msg: 'Profile Updated..!' });
+                            }
+                            else {
+                                res.status(400).send({ msg: 'User Does not Exists' });
+                            }
+                        })
+                    }
+                })
 
             } catch (error) {
-                res.status(401).send({ msg: 'Unauthorized User' })
+                res.status(401).send({ msg: error.message })
             }
         }
     }
@@ -234,7 +265,7 @@ user.post('/forgetpassword', [
             } else {
                 const body = `<h3>Go to this Link and Reset your Password</h3>
                 <br>
-                <a>http://localhost:4200/passwordreset</a>`
+                <a href="http://localhost:4200/passwordreset">Forgot Password</a>`
                 const que = `select u_email from user where u_email='${req.body.u_email}'`;
                 con.query(que, (err, result) => {
                     if (result.length == 0) {
