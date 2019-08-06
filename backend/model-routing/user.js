@@ -95,7 +95,7 @@ user.post('/login', [
                             let token = jwt.sign(data, SECRET_KEY, {
                                 expiresIn: 1440
                             })
-                            res.status(200).json({ token: token, u_id: result[0]['u_id'], msg: 'Login Successfully..!' })
+                            res.status(200).json({ token: token, u_id: result[0]['u_id'],u_name:result[0]['u_name'], msg: 'Login Successfully..!' })
 
                         } else {
                             res.status(406).send({ msg: '*Password Does Not Match' })
@@ -114,7 +114,28 @@ user.post('/login', [
     }
 
 
-})
+});
+
+// All users
+user.get('/alluser', auth, (req, res) => {
+    try {
+
+        const que = `select * from user `;
+        con.query(que, (err, result) => {
+
+            if (!result.length == 0) {
+                res.status(200).json({ msg: result })
+            }
+            else {
+                res.status(404).send({ msg: err['sqlMessage'] });
+            }
+        })
+    }
+    catch (error) {
+        res.status(401).send({ msg: error.message })
+    }
+});
+
 //Get Profile
 user.get('/profile', auth, (req, res) => {
     try {
@@ -231,7 +252,7 @@ user.post('/forgetpassword', [
             } else {
                 const body = `<h3>Go to this Link and Reset your Password</h3>
                 <br>
-                <a>http://localhost:4200/passwordreset</a>`
+                <a href="http://localhost:4200/passwordreset">Forgot Password</a>`
                 const que = `select u_email from user where u_email='${req.body.u_email}'`;
                 con.query(que, (err, result) => {
                     if (result.length == 0) {

@@ -21,18 +21,17 @@ groups.post("/add", [
                 return res.status(422).jsonp({ msg: errors.array() });
             }
             else {
-                const userData = req.user;
-                console.log(res.result)
+                const userData = req.user;                
                 var today = new Date();
                 var dd = String(today.getDate()).padStart(2, '0');
                 var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
                 var yyyy = today.getFullYear();
                 today = yyyy + '-' + mm + '-' + dd;
                 console.log(today);
-                var sql = `insert into groups (g_name,created_by,created_date) values('${req.body.g_name}','${userData[0]['u_name']}','${today}')`
+                var sql = `insert into groups (g_name,created_by,created_date) values('${req.body.g_name}','${userData[0]['u_id']}','${today}')`
                 con.query(sql, (err, result) => {
                     if (result) {
-                        res.status(200).send({ msg: 'Group Created..!' })
+                        res.status(200).send({ msg: 'Group Created..!' ,id:result})
                     }
                     else {
                         res.status(422).send({ msg: err['sqlMessage'] })
@@ -50,41 +49,44 @@ groups.post("/add", [
 
 
 //Own Creted Groups
-groups.get("/allgroup", auth, (req, res) => {
+
+groups.get("/mygroup", auth, (req, res) => {
     try {
 
-        var sql = `select * FROM groups WHERE created_by ='${req.user[0]['u_name']}'`;
+        var sql = `SELECT * from groups join groups_member on groups.g_id=groups_member.g_id WHERE groups_member.u_id=${req.user[0]['u_id']}`;
         con.query(sql, (err, result) => {
             if (result) {
-                res.status(200).send({ result })
+                res.status(200).send({ result });
             }
             else {
-                res.status(422).send({ msg: err['sqlMessage'] })
+                res.status(422).send({ msg: err['sqlMessage'] });
             }
         });
-    } catch (error) {
-        res.status(401).send({ msg: error.message })
+    } catch (error) {   
+        res.status(401).send({ msg: error.message });
     }
 
 })
 
 //all Groups
-groups.get("/group/allgroups", auth, (req, res) => {
-    try {
-        var sql = `select * FROM groups `;
-        con.query(sql, (err, result) => {
-            if (result) {
-                res.status(200).send({ result })
-            }
-            else {
-                res.status(422).send({ msg: err['sqlMessage'] })
-            }
-        });
-    } catch (error) {
-        res.status(401).send({ msg: error.message })
-    }
+// groups.get("/allgroups", auth, (req, res) => {
+//     try {
+        
+//       //  var sql = `SELECT * FROM groups_member JOIN groups ON groups_member.g_id=groups.g_id JOIN user ON groups_member.u_id=user.u_id WHERE groups.created_by=${req.user[0]['u_id']} GROUP BY g_name`;
+//         const sql=`select * from groups_member join groups on`
+//         con.query(sql, (err, result) => {
+//             if (result) {
+//                 res.status(200).send({ result });
+//             }
+//             else {
+//                 res.status(422).send({ msg: err['sqlMessage'] });
+//             }
+//         });
+//     } catch (error) {
+//         res.status(401).send({ msg: error.message })
+//     }
 
-})
+// })
 
 //Delete Groups
 groups.delete("/delete/:id", auth, (req, res) => {
@@ -97,7 +99,7 @@ groups.delete("/delete/:id", auth, (req, res) => {
             else {
                 var deleteauth = `select created_by from groups where g_id=${req.params.id}`
                 con.query(check, (err, user) => {
-                    if (user[0]['created_by'] != req.user[0]['u_name']) {
+                    if (user[0]['created_by'] != req.user[0]['u_id']) {
                         res.send({ msg: 'You are not Admin' });
                     }
                     else {

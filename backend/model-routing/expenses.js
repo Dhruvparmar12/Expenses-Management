@@ -1,21 +1,20 @@
 const express = require('express');
 const expenses = express.Router()
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
+
 const dotenv = require('dotenv');
 dotenv.config();
 const { check, validationResult } = require('express-validator');
 expenses.use(cors());
 const con = require('../connection/connection')
-const SECRET_KEY = process.env.SECRET;
+
 const auth = require('./auth');
+
 //Add expenses
 expenses.post("/add", [
     check('e_name').not().isEmpty().withMessage('Cannot be Blank'),
     check('e_amount').not().isEmpty().withMessage('Cannot be Blank'),
-    check('e_date').not().isEmpty().withMessage('Cannot be Blank')
-
-
+    check('e_date').not().isEmpty().withMessage('Cannot be Blank'),
 ], auth, (req, res) => {
     try {
         if (res) {
@@ -30,15 +29,14 @@ expenses.post("/add", [
                         res.status(200).send({ msg: 'Expenses Added' })
                     }
                     else {
-                        res.status(422).send({ msg: err['sqlMessage'] })
+                        res.status(422).send({ msg: err['sqlMessage'] });
                     }
                 });
-
             }
         }
     }
     catch (error) {
-        res.status(401).send({ msg: error.message })
+        res.status(401).send({ msg: error.message });
     }
 });
 
@@ -55,7 +53,7 @@ expenses.get("/allexpenses", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: `You are Not Authorized` })
+        res.status(401).send({ msg: error })
     }
 
 })
@@ -65,11 +63,11 @@ expenses.get("/:id", auth, (req, res) => {
     try {
         var sql = `select * FROM expense WHERE e_id=${req.params.id}`;
         con.query(sql, (err, result) => {
-            if (result) {
+            if (result.length > 0) {
                 res.status(200).send(result)
             }
             else {
-                res.status(422).send({ msg: err['sqlMessage'] })
+                res.status(422).send({ msg: 'Expenses not Existed' })
             }
         });
     } catch (error) {
@@ -91,15 +89,25 @@ expenses.patch("/update/:id", [
 
             }
             else {
-                var sql = `update expense set e_name='${req.body.e_name}',e_amount=${req.body.e_amount},e_date='${req.body.e_date}' WHERE e_id=${req.params.id} and u_id=${req.user[0]['u_id']} `;
-                con.query(sql, (err, result) => {
-                    if (result) {
-                        res.status(200).send({ msg: 'Expenses Details Updated..!' })
+                const check = `select e_id from expense where e_id=${req.params.id}`;
+                con.query(check, (err, result) => {
+                    if (result.length > 0) {
+                        var sql = `update expense set e_name='${req.body.e_name}',e_amount=${req.body.e_amount},e_date='${req.body.e_date}' WHERE e_id=${req.params.id} and u_id=${req.user[0]['u_id']} `;
+                        con.query(sql, (err, result) => {
+                            if (err) {
+                                res.send({ msg: err['sqlMessage']});
+                                
+                            }
+                            else {
+                               res.status(200).send({ msg: 'Expenses Details Updated..!' });
+                            }
+                        });
                     }
-                    else {
-                        res.status(422).send({ msg: err['sqlMessage'] })
+                    else{
+                        res.send({msg:'Expenses Not Exists'});
                     }
-                });
+                })
+
             }
         }
     } catch (error) {
@@ -109,12 +117,12 @@ expenses.patch("/update/:id", [
 });
 
 //Delete Expenses
-expenses.delete("/delete/:id",auth, (req, res) => {
+expenses.delete("/delete/:id", auth, (req, res) => {
     try {
         var check = `select * from expense where e_id=${req.params.id}`
         con.query(check, (err, data) => {
             if (data.length == 0) {
-                res.send({ msg: 'Expenses Already Deleted.!' })
+                res.send({ msg: 'Expenses Already Deleted.!' });
             }
             else {
                 var deleteauth = `select u_id from expense where e_id=${req.params.id}`
