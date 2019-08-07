@@ -38,7 +38,7 @@ member.post("/add", [
                                                 res.status(200).send({ msg: 'Member Added..!' })
                                             }
                                             else {
-                                                res.status(422).send({ msg: err['sqlMessage'] })
+                                                res.status(422).send({ msg: err['sqlMessage'] });
                                             }
                                         });
 

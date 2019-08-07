@@ -90,7 +90,7 @@ splitexpenses.get("/allexpenses", auth, (req, res) => {
 
 splitexpenses.get("/allmember/:id", auth, (req, res) => {
     try {
-        var sql = `SELECT user.u_name,split_bill.amount,split_bill.status,split_bill.s_b_id from user join split_bill on user.u_id=split_bill.u_id WHERE s_e_id=${req.params.id}`;
+        var sql = `SELECT user.u_id,user.u_name,split_bill.amount,split_bill.status,split_bill.s_b_id from user join split_bill on user.u_id=split_bill.u_id WHERE s_e_id=${req.params.id}`;
         con.query(sql, (err, result) => {
             if (result) {
                 res.status(200).send(result)
