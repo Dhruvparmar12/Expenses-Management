@@ -35,13 +35,18 @@ splitexpenses.post("/add", [
                                     if (count.length > 0) {
                                         const member = count[0]["member"]
                                         splitamount = req.body.e_amount / member;
+
                                         const total_member = `SELECT u_id from groups_member where g_id=${req.body.g_id}`;
                                         con.query(total_member, (err, data) => {
                                             if (data.length > 0) {
                                                 for (let i of data) {
-                                                    const splitdata = `insert into split_bill(s_e_id,u_id,g_id,amount,status) values(${result['insertId']},${i.u_id},${req.body.g_id},${splitamount},'unpaid')`;
+                                                    let splitdata = `insert into split_bill(s_e_id,u_id,g_id,amount,status) values(${result['insertId']},${i.u_id},${req.body.g_id},${splitamount},'unpaid')`;
+                                                    if (i.u_id == req.user[0]['u_id']) {
+                                                        splitdata = `insert into split_bill(s_e_id,u_id,g_id,amount,status) values(${result['insertId']},${i.u_id},${req.body.g_id},${splitamount},'paid')`;
+                                                    }
                                                     con.query(splitdata, (err, result) => {
                                                         if (err) {
+
                                                             res.status(422).send({ msg: err['sqlMessage'] });
                                                         }
                                                     })
