@@ -111,7 +111,7 @@ splitexpenses.get("/allmember/:id", auth, (req, res) => {
 
 splitexpenses.patch("/update/:id", auth, (req, res) => {
     try {
-              
+
         var sql = `UPDATE split_bill SET status = '${req.body.status}' WHERE s_e_id =${req.params.id} and u_id=${req.user[0]['u_id']}`;
         con.query(sql, (err, result) => {
             if (err) {
@@ -128,5 +128,33 @@ splitexpenses.patch("/update/:id", auth, (req, res) => {
 
 });
 
+splitexpenses.get("/amount", auth, (req, res) => {
+    try {
+        var sql = `select sum(amount) as Borrow from split_expense join split_bill ON split_expense.s_e_id=split_bill.s_e_id where split_expense.u_id=${req.user[0]['u_id']} and split_bill.status='unpaid'`;
+        con.query(sql, (err, result) => {
+            if (result.length > 0) {
+                var sql1 = `SELECT sum(amount) as Lant FROM split_bill WHERE split_bill.u_id=${req.user[0]['u_id']}  AND split_bill.status='unpaid'`;
+                con.query(sql1,(err,data)=>{
+                    if(data.length>0){
+                        res.send({Borrow:result,Lant:data});
+                    }
+                    else{
+                        res.status(404).send({ msg: 'No Amount You Lent' });
+                    }
+                })
+
+            }
+            else {
+                res.status(404).send({ msg: 'No Amount You Borrow' });
+            }
+        });
+    } catch (error) {
+        res.status(401).send({ msg: error })
+    }
+
+});
+
+
+//SELECT sum(amount) FROM `split_bill` WHERE split_bill.u_id=1 AND split_bill.status='unpaid';
 module.exports = splitexpenses;
 
