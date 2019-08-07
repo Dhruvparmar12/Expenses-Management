@@ -77,7 +77,7 @@ splitexpenses.post("/add", [
 
 splitexpenses.get("/allexpenses", auth, (req, res) => {
     try {
-        var sql = `SELECT * FROM split_bill JOIN split_expense ON split_expense.s_e_id=split_bill.s_e_id JOIN groups on split_bill.g_id=groups.g_id WHERE split_expense.u_id = ${req.user[0]['u_id']} OR split_bill.u_id =${req.user[0]['u_id']} group by split_expense.e_name`;
+        var sql = `SELECT * FROM split_bill JOIN split_expense ON split_expense.s_e_id=split_bill.s_e_id JOIN groups on split_bill.g_id=groups.g_id WHERE split_expense.u_id = ${req.user[0]['u_id']} OR split_bill.u_id =${req.user[0]['u_id']} group by split_expense.s_e_id`;
         con.query(sql, (err, result) => {
             if (result) {
                 res.status(200).send(result)
