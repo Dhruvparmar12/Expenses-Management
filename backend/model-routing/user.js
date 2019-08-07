@@ -60,11 +60,8 @@ user.post("/add", [
         }
     }
     catch (error) {
-<<<<<<< HEAD
-        res.status(500).json({ msg: error })
-=======
+
         res.status(500).send({ msg: error.message })
->>>>>>> splitwise
     }
 });
 
@@ -97,11 +94,7 @@ user.post('/login', [
                             let token = jwt.sign(data, SECRET_KEY, {
                                 expiresIn: 1440
                             })
-<<<<<<< HEAD
-                            res.status(200).send({ token: token, u_id: result[0]['u_id'],msg:'LogIn SuccssFully' })
-=======
                             res.status(200).json({ token: token, u_id: result[0]['u_id'],u_name:result[0]['u_name'], msg: 'Login Successfully..!' })
->>>>>>> splitwise
 
                         } else {
                             res.status(404).send({ msg: '*Password Does Not Match' })
@@ -145,13 +138,6 @@ user.get('/alluser', auth, (req, res) => {
 //Get Profile
 user.get('/profile', auth, (req, res) => {
     try {
-<<<<<<< HEAD
-        var decoded = jwt.verify(req.headers['authorization'], SECRET_KEY)
-        if (decoded) {
-            const que = `select * from user where u_id='${decoded.u_id}'`;
-            con.query(que, (err, result) => {
-=======
->>>>>>> splitwise
 
         const que = `select * from user where u_email='${req.user[0]['u_email']}'`;
         con.query(que, (err, result) => {
