@@ -7,7 +7,6 @@ const { check, validationResult } = require('express-validator');
 splitexpenses.use(cors());
 const con = require('../connection/connection')
 const auth = require('./auth');
-
 //Add expenses
 splitexpenses.post("/add", [
     check('e_name').not().isEmpty().withMessage('Cannot be Blank'),
@@ -72,7 +71,7 @@ splitexpenses.post("/add", [
         }
     }
     catch (error) {
-        res.status(401).send({ msg: error.message });
+        res.status(401).send({ msg: error });
     }
 });
 
@@ -112,7 +111,8 @@ splitexpenses.get("/allmember/:id", auth, (req, res) => {
 
 splitexpenses.patch("/update/:id", auth, (req, res) => {
     try {
-        var sql = `UPDATE split_bill SET status = '${req.body.status}' WHERE s_b_id =${req.params.id}`;
+              
+        var sql = `UPDATE split_bill SET status = '${req.body.status}' WHERE s_e_id =${req.params.id} and u_id=${req.user[0]['u_id']}`;
         con.query(sql, (err, result) => {
             if (err) {
                 res.send({ msg: err['sqlMessage'] });
@@ -127,7 +127,6 @@ splitexpenses.patch("/update/:id", auth, (req, res) => {
     }
 
 });
-
 
 module.exports = splitexpenses;
 
