@@ -130,13 +130,13 @@ splitexpenses.patch("/update/:id", auth, (req, res) => {
 
 splitexpenses.get("/amount", auth, (req, res) => {
     try {
-        var sql = `select sum(amount) as Borrow from split_expense join split_bill ON split_expense.s_e_id=split_bill.s_e_id where split_expense.u_id=${req.user[0]['u_id']} and split_bill.status='unpaid'`;
+        var sql = `select sum(amount) as Land from split_expense join split_bill ON split_expense.s_e_id=split_bill.s_e_id where split_expense.u_id=${req.user[0]['u_id']} and split_bill.status='unpaid'`;
         con.query(sql, (err, result) => {
             if (result.length > 0) {
-                var sql1 = `SELECT sum(amount) as Lant FROM split_bill WHERE split_bill.u_id=${req.user[0]['u_id']}  AND split_bill.status='unpaid'`;
+                var sql1 = `SELECT sum(amount) as Borrow FROM split_bill WHERE split_bill.u_id=${req.user[0]['u_id']}  AND split_bill.status='unpaid'`;
                 con.query(sql1,(err,data)=>{
                     if(data.length>0){
-                        res.send({Borrow:result,Lant:data});
+                        res.send({Land:result,Borrow:data});
                     }
                     else{
                         res.status(404).send({ msg: 'No Amount You Lent' });

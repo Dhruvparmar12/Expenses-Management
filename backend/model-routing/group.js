@@ -27,7 +27,7 @@ groups.post("/add", [
                 var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
                 var yyyy = today.getFullYear();
                 today = yyyy + '-' + mm + '-' + dd;
-                console.log(today);
+               
                 var sql = `insert into groups (g_name,created_by,created_date) values('${req.body.g_name}','${userData[0]['u_id']}','${today}')`
                 con.query(sql, (err, result) => {
                     if (result) {
@@ -66,27 +66,8 @@ groups.get("/mygroup", auth, (req, res) => {
         res.status(401).send({ msg: error.message });
     }
 
-})
+});
 
-//all Groups
-// groups.get("/allgroups", auth, (req, res) => {
-//     try {
-        
-//       //  var sql = `SELECT * FROM groups_member JOIN groups ON groups_member.g_id=groups.g_id JOIN user ON groups_member.u_id=user.u_id WHERE groups.created_by=${req.user[0]['u_id']} GROUP BY g_name`;
-//         const sql=`select * from groups_member join groups on`
-//         con.query(sql, (err, result) => {
-//             if (result) {
-//                 res.status(200).send({ result });
-//             }
-//             else {
-//                 res.status(422).send({ msg: err['sqlMessage'] });
-//             }
-//         });
-//     } catch (error) {
-//         res.status(401).send({ msg: error.message })
-//     }
-
-// })
 
 //Delete Groups
 groups.delete("/delete/:id", auth, (req, res) => {
