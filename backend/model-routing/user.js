@@ -268,7 +268,7 @@ user.post('/forgetpassword', [
 
 
                         const mailOptions = {
-                            from: 'dhruv.parmar.sa@gmail.com',
+                            from: '"Split Bill" <dhruv.parmar.sa@gmail.com>',
                             to: req.body.u_email,
                             subject: 'Password Recover',
                             html: body
