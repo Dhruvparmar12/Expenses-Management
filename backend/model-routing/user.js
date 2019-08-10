@@ -156,9 +156,9 @@ user.get('/profile', auth, (req, res) => {
 });
 
 //Get Specific User Profile
-user.get('/user/:id', auth, (req, res) => {
+user.get('/profile', auth, (req, res) => {
     try {
-        const que = `select * from user where u_id='${req.params.id}'`;
+        const que = `select * from user where u_id='${req.user[0]['u_id']}'`;
         con.query(que, (err, result) => {
 
             if (!result.length == 0) {
@@ -176,7 +176,7 @@ user.get('/user/:id', auth, (req, res) => {
 
 //Update User Profile
 
-user.patch('/update/:id', [
+user.patch('/update', [
     check('u_name').not().isEmpty().withMessage('Cannot be Blank').matches(/^[a-zA-Z]+$/, "i").withMessage('please enter Only Alphabets And Max 50 character'),
     check('u_email', 'Please Enter the Valid Email Address').not().isEmpty().withMessage('Cannot be Blank').isEmail().withMessage('Please Enter the Valid Email Address'),
     check('u_mobile').matches(/^[0][1-9]\d{9}$|^[1-9]\d{9,12}$/).withMessage('only number,Min 10, Max 13 length')
@@ -199,7 +199,7 @@ user.patch('/update/:id', [
                         res.status(406).send({ msg: 'Email Already Used.!' })
                     }
                     else {
-                        const que = `update user set u_name='${req.body.u_name}',u_email='${req.body.u_email}',u_mobile=${req.body.u_mobile} where u_id='${req.params.id}'`;
+                        const que = `update user set u_name='${req.body.u_name}',u_email='${req.body.u_email}',u_mobile=${req.body.u_mobile} where u_id='${req.user[0]['u_id']}'`;
                         con.query(que, (err, result) => {
                             if (result) {
                                 res.status(201).json({ msg: 'Profile Updated..!' });
@@ -220,11 +220,11 @@ user.patch('/update/:id', [
 
 //Delete Account
 
-user.delete("/delete/:id", (req, res) => {
+user.delete("/delete", (req, res) => {
     try {
         if (jwt.verify(req.headers['authorization'], SECRET_KEY)) {
 
-            const que = `DELETE  FROM user WHERE u_id=${req.params.id}`;
+            const que = `DELETE  FROM user WHERE u_id=${req.user[0]['u_id']}`;
             con.query(que, (err, result) => {
                 if (result) {
                     res.status(200).send({ msg: 'Profile Deleted..!' });
@@ -338,7 +338,7 @@ user.patch('/resetpassword', [
 })
 
 user.patch('/changepassword', [
-    check('u_id', 'Please Enter the User Id').not().isEmpty().withMessage('Cannot be Blank'),
+   
     check("u_password").not().isEmpty().withMessage('Cannot be Blank').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/, "i").withMessage("Password should be combination of one uppercase , one lower case, one digit and min 8 , max 20 char long"),
     check("c_password").not().isEmpty().withMessage('Cannot be Blank').custom((value, { req }) => (value === req.body.u_password)).withMessage('Password does not Match'),
 
@@ -358,7 +358,7 @@ user.patch('/changepassword', [
                             res.status(406).send({ mgs: 'User Not Exists.!' })
                         } else {
                             u_password = bcrypt.hashSync(req.body.u_password, 10);
-                            const que = `update user set u_password='${u_password}' where u_id=${req.body.u_id}`;
+                            const que = `update user set u_password='${u_password}' where u_id=${req.user[0]['u_id']}`;
                             con.query(que, (err, result) => {
                                 console.log(result)
                                 if (result) {
