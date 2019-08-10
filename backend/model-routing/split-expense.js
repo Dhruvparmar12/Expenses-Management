@@ -73,11 +73,14 @@ splitexpenses.post("/add", [
     catch (error) {
         res.status(401).send({ msg: error });
     }
-});
+}); 
 
 splitexpenses.get("/allexpenses", auth, (req, res) => {
     try {
-        var sql = `SELECT * FROM split_bill JOIN split_expense ON split_expense.s_e_id=split_bill.s_e_id JOIN groups on split_bill.g_id=groups.g_id WHERE split_expense.u_id = ${req.user[0]['u_id']} OR split_bill.u_id =${req.user[0]['u_id']} group by split_expense.s_e_id`;
+        var sql = `SELECT user.u_name,groups.g_name,split_expense.* FROM split_bill 
+        JOIN split_expense ON split_expense.s_e_id=split_bill.s_e_id 
+        JOIN user on user.u_id=split_expense.u_id 
+        JOIN groups on split_bill.g_id=groups.g_id WHERE split_expense.u_id = ${req.user[0]['u_id']} OR split_bill.u_id =${req.user[0]['u_id']} group by split_expense.s_e_id`;
         con.query(sql, (err, result) => {
             if (result) {
                 res.status(200).send(result)
