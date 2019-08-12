@@ -71,7 +71,7 @@ splitexpenses.post("/add", [
         }
     }
     catch (error) {
-        res.status(401).send({ msg: error });
+        res.status(401).send({ msg:error.message });
     }
 }); 
 
@@ -90,7 +90,7 @@ splitexpenses.get("/allexpenses", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: error })
+        res.status(401).send({ msg:error.message  })
     }
 
 });
@@ -107,7 +107,7 @@ splitexpenses.get("/allmember/:id", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: error })
+        res.status(401).send({msg:error.message  })
     }
 
 });
@@ -126,7 +126,7 @@ splitexpenses.patch("/update/:id", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: '`You are Not Authorized`' })
+        res.status(401).send({ msg: '`You are Not Authorized`' });
     }
 
 });
@@ -152,7 +152,7 @@ splitexpenses.get("/amount", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: error })
+        res.status(401).send({ msg:error.message  })
     }
 
 });

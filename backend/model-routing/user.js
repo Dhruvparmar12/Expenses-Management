@@ -42,7 +42,7 @@ user.post("/add", [
                 }
                 var check = `select u_email from user where u_email='${email}'`
                 con.query(check, (err, data) => {
-                    if (data.length!=0) {
+                    if (data.length != 0) {
                         res.status(406).json({ msg: 'Email Already Exists' })
                     }
                     else {
@@ -50,7 +50,7 @@ user.post("/add", [
                         var sql = `insert into user(u_name,u_email,u_password,u_mobile) values('${name}','${email}','${password}',${mobile})`;
                         con.query(sql, (err, result) => {
                             if (result) {
-                            
+
                                 res.status(201).json({ msg: 'Successfully Registered' });
                             }
                         });
@@ -94,7 +94,7 @@ user.post('/login', [
                             let token = jwt.sign(data, SECRET_KEY, {
                                 expiresIn: 1440
                             })
-                            res.status(200).json({ token: token, u_id: result[0]['u_id'],u_name:result[0]['u_name'], msg: 'Login Successfully..!' })
+                            res.status(200).json({ token: token, u_id: result[0]['u_id'], u_name: result[0]['u_name'], msg: 'Login Successfully..!' })
 
                         } else {
                             res.status(404).send({ msg: '*Password Does Not Match' })
@@ -181,7 +181,7 @@ user.patch('/update', [
     check('u_email', 'Please Enter the Valid Email Address').not().isEmpty().withMessage('Cannot be Blank').isEmail().withMessage('Please Enter the Valid Email Address'),
     check('u_mobile').matches(/^[0][1-9]\d{9}$|^[1-9]\d{9,12}$/).withMessage('only number,Min 10, Max 13 length')
 
-],auth, (req, res) => {
+], auth, (req, res) => {
 
 
     if (res) {
@@ -192,10 +192,10 @@ user.patch('/update', [
         }
         else {
             try {
-                
+
                 const check = `select u_email from user where u_email='${req.body.u_email}'`
                 con.query(check, (err, data) => {
-                    if (data[0]['u_email'] != req.user[0]['u_email'] ) {
+                    if (data[0]['u_email'] != req.user[0]['u_email']) {
                         res.status(406).send({ msg: 'Email Already Used.!' })
                     }
                     else {
@@ -220,19 +220,17 @@ user.patch('/update', [
 
 //Delete Account
 
-user.delete("/delete", (req, res) => {
+user.delete("/delete", auth, (req, res) => {
     try {
-        if (jwt.verify(req.headers['authorization'], SECRET_KEY)) {
+        const que = `DELETE  FROM user WHERE u_id=${req.user[0]['u_id']}`;
+        con.query(que, (err, result) => {
+            if (result) {
+                res.status(200).send({ msg: 'Profile Deleted..!' });
+            }
+        })
 
-            const que = `DELETE  FROM user WHERE u_id=${req.user[0]['u_id']}`;
-            con.query(que, (err, result) => {
-                if (result) {
-                    res.status(200).send({ msg: 'Profile Deleted..!' });
-                }
-            })
-        }
     } catch (error) {
-        res.status(401).send({ msg: 'Unauthorized User' });
+        res.status(401).send({ msg: error.message });
     }
 })
 
@@ -290,7 +288,7 @@ user.post('/forgetpassword', [
             }
         }
     } catch (error) {
-        res.status(401).send({ msg: 'Invalid' })
+        res.status(401).send({ msg: error.message })
     }
 })
 
@@ -333,12 +331,12 @@ user.patch('/resetpassword', [
     }
     catch (error) {
 
-        res.status(401).send({ msg: 'Invalid' })
+        res.status(401).send({ msg:error.message  })
     }
 })
 
 user.patch('/changepassword', [
-   
+
     check("u_password").not().isEmpty().withMessage('Cannot be Blank').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/, "i").withMessage("Password should be combination of one uppercase , one lower case, one digit and min 8 , max 20 char long"),
     check("c_password").not().isEmpty().withMessage('Cannot be Blank').custom((value, { req }) => (value === req.body.u_password)).withMessage('Password does not Match'),
 
@@ -379,7 +377,7 @@ user.patch('/changepassword', [
     }
     catch (error) {
 
-        res.status(401).send({ msg: 'Unauthorized User..!' })
+        res.status(401).send({ msg:error.message  })
     }
 })
 

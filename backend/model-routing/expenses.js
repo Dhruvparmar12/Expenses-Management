@@ -1,7 +1,6 @@
 const express = require('express');
 const expenses = express.Router()
 const cors = require('cors');
-
 const dotenv = require('dotenv');
 dotenv.config();
 const { check, validationResult } = require('express-validator');
@@ -53,7 +52,7 @@ expenses.get("/allexpenses", auth, (req, res) => {
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: error })
+        res.status(401).send({ msg:error.message  })
     }
 
 })
@@ -67,11 +66,11 @@ expenses.get("/:id", auth, (req, res) => {
                 res.status(200).send(result)
             }
             else {
-                res.status(422).send({ msg: 'Expenses not Existed' })
+                res.status(404).send({ msg: 'Expenses not Existed' })
             }
         });
     } catch (error) {
-        res.status(401).send({ msg: `You are Not Authorized` })
+        res.status(401).send({msg:error.message  })
     }
 });
 
@@ -111,7 +110,7 @@ expenses.patch("/update/:id", [
             }
         }
     } catch (error) {
-        res.status(401).send({ msg: '`You are Not Authorized`' })
+        res.status(401).send({ msg:error.message })
     }
 
 });
